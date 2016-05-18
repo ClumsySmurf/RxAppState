@@ -8,7 +8,7 @@ import android.support.annotation.NonNull;
 import com.jenzz.appstate.AppState;
 import com.jenzz.appstate.AppStateListener;
 import com.jenzz.appstate.internal.adapters.ActivityLifecycleCallbacksAdapter;
-import com.jenzz.appstate.internal.adapters.ComponentCallbacks2Adapter;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.jenzz.appstate.AppState.BACKGROUND;
@@ -16,23 +16,20 @@ import static com.jenzz.appstate.AppState.FOREGROUND;
 
 public final class AppStateRecognizer {
 
-  private final ActivityLifecycleCallbacks activityStartedCallback = new ActivityStartedCallback();
-  private final ComponentCallbacks2 uiHiddenCallback = new UiHiddenCallback();
+  private final ActivityLifecycleCallbacks activityStartedCallback = new ActivityCallback();
 
   private AppState appState = BACKGROUND;
   private AppStateListener appStateListener;
-  private AtomicBoolean isFirstLaunch = new AtomicBoolean(true);
+  private int activeActivities;
 
   public void start(@NonNull Application app, @NonNull AppStateListener appStateListener) {
     this.appStateListener = appStateListener;
 
     app.registerActivityLifecycleCallbacks(activityStartedCallback);
-    app.registerComponentCallbacks(uiHiddenCallback);
   }
 
   public void stop(@NonNull Application app) {
     app.unregisterActivityLifecycleCallbacks(activityStartedCallback);
-    app.unregisterComponentCallbacks(uiHiddenCallback);
   }
 
   @NonNull
@@ -40,26 +37,27 @@ public final class AppStateRecognizer {
     return appState;
   }
 
-  private class ActivityStartedCallback extends ActivityLifecycleCallbacksAdapter {
+  private class ActivityCallback extends ActivityLifecycleCallbacksAdapter {
 
     @Override
     public void onActivityStarted(Activity activity) {
-      if (isFirstLaunch.compareAndSet(true, false)) {
-        appState = FOREGROUND;
-      }
-
-      if (appState == BACKGROUND) {
-        appState = FOREGROUND;
-        appStateListener.onAppDidEnterForeground();
-      }
+      super.onActivityStarted(activity);
+      activeActivities++;
+      updateState();
     }
-  }
-
-  private class UiHiddenCallback extends ComponentCallbacks2Adapter {
 
     @Override
-    public void onTrimMemory(int level) {
-      if (level >= TRIM_MEMORY_UI_HIDDEN) {
+    public void onActivityStopped(Activity activity) {
+      super.onActivityStopped(activity);
+      activeActivities--;
+      updateState();
+    }
+
+    private void updateState(){
+      if (activeActivities > 0 && appState != FOREGROUND){
+        appState = FOREGROUND;
+        appStateListener.onAppDidEnterForeground();
+      } else if (activeActivities == 0) {
         appState = BACKGROUND;
         appStateListener.onAppDidEnterBackground();
       }
