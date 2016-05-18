@@ -29,7 +29,6 @@ public class AppStateRecognizerTest {
     appStateRecognizer.start(mockApplication, new DummyAppStateListener());
 
     verify(mockApplication).registerActivityLifecycleCallbacks(any(ActivityLifecycleCallbacks.class));
-    verify(mockApplication).registerComponentCallbacks(any(ComponentCallbacks2.class));
   }
 
   @Test
@@ -37,7 +36,6 @@ public class AppStateRecognizerTest {
     appStateRecognizer.stop(mockApplication);
 
     verify(mockApplication).unregisterActivityLifecycleCallbacks(any(ActivityLifecycleCallbacks.class));
-    verify(mockApplication).unregisterComponentCallbacks(any(ComponentCallbacks2.class));
   }
 
   @Test
