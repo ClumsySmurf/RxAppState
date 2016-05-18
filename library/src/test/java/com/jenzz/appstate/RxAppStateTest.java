@@ -1,22 +1,16 @@
 package com.jenzz.appstate;
 
-import android.content.Intent;
-
 import com.jenzz.appstate.dummies.DummyActivity;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 
 import rx.observers.TestSubscriber;
 
-import static android.content.ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.jenzz.appstate.AppState.BACKGROUND;
 import static com.jenzz.appstate.AppState.FOREGROUND;
